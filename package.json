@@ -1,0 +1,16 @@
+{
+  "name": "shogi-ai-autotune-talk",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "slidev",
+    "build": "slidev build",
+    "build:pages": "node scripts/build-pages.mjs",
+    "export": "slidev export --output dist/slides.pdf"
+  },
+  "devDependencies": {
+    "@slidev/cli": "52.12.0",
+    "@slidev/theme-default": "0.25.0",
+    "playwright-chromium": "1.58.2"
+  }
+}
