@@ -1,6 +1,6 @@
 # Shogi AI AutoTune 講演スライド
 
-`slides.md` が原稿、`style.css` が見た目の指定です。現在は4枚の試作です。
+`slides.md` が原稿、`style.css` が見た目の指定です。講演用スライドと発表者ノートを含みます。
 
 ## 準備とプレビュー
 

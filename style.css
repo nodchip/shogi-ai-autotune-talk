@@ -1,21 +1,116 @@
 :root { --slidev-theme-primary: #147a73; }
-.slidev-layout { background: #f8f7f2; color: #152c31; padding: 54px 68px; font-family: 'Noto Sans JP', sans-serif; }
-.slidev-layout h1 { font-size: 32px; line-height: 1.4; font-weight: 750; margin: 18px 0 35px; }
+.slidev-layout { background: #f8f7f2; color: #152c31; padding: 54px 68px; font-family: 'Noto Sans JP', sans-serif; font-size: 22px; }
+.slidev-layout h1 { font-size: 38px; line-height: 1.3; font-weight: 750; margin: 18px 0 28px; }
+.slidev-layout.section h1 { color: #147a73; font-size: 60px; margin: 0; }
 .eyebrow { color: #147a73; font-size: 13px; font-weight: 700; letter-spacing: .14em; }
 .cover { padding-top: 48px; }
-.cover h1 { font-size: 52px; line-height: 1.35; margin: 32px 0 20px; }
-.cover p { font-size: 23px; color: #52686a; }
-.tag { display: inline-block; color: #147a73; background: #e0f0eb; border-radius: 5px; padding: 7px 14px; margin-top: 42px; font-size: 14px; }
+.cover h1 { font-size: 60px; line-height: 1.35; margin: 32px 0 20px; }
+.cover p { font-size: 27px; color: #52686a; }
+.profile-photo {
+  float: right;
+  width: 245px;
+  height: 270px;
+  margin-left: 32px;
+  object-fit: contain;
+  object-position: top center;
+}
+.tag { display: inline-block; color: #147a73; background: #e0f0eb; border-radius: 5px; padding: 7px 14px; margin-top: 42px; font-size: 18px; }
 .two-cards { display: flex; gap: 22px; }
+.change-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
 .card { flex: 1; background: #fff; border: 1px solid #dce6df; border-radius: 12px; padding: 20px 26px; }
-.card h2 { font-size: 25px; margin: 8px 0; }
-.card p { color: #52686a; font-size: 19px; line-height: 1.7; }
-.number { color: #14978d; font-size: 15px; font-weight: 700; }
-.callout { margin-top: 32px; border-left: 4px solid #e4a04e; padding: 12px 18px; background: #f2eee3; font-size: 18px; }
+.card h2 { font-size: 30px; margin: 8px 0; }
+.card p { color: #52686a; font-size: 22px; line-height: 1.5; }
+.shogihome-example {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 460px);
+  align-items: center;
+  gap: 36px;
+}
+.shogihome-example .card { padding: 14px 20px; }
+.shogihome-example .card + .card { margin-top: 14px; }
+.shogihome-example .card h2 { margin: 0 0 8px; }
+.shogihome-example .card p { margin: 0; }
+.shogihome-example figure { margin: 0; }
+.shogihome-capture { aspect-ratio: 1920 / 1032; overflow: hidden; }
+.shogihome-capture img { display: block; width: 100%; }
+.shogihome-example figcaption { margin-top: 8px; font-size: 17px; color: #52686a; }
+.slidev-layout:has(.game-tree-example) { position: relative; }
+.slidev-layout h1:has(+ .game-tree-example) { margin-bottom: 8px; }
+.game-tree-example {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 320px;
+  align-items: start;
+  gap: 32px;
+}
+.game-tree-example > ul { margin-top: 0; }
+.game-tree-example li { margin-bottom: 14px; line-height: 1.5; }
+.game-tree-diagram {
+  position: absolute;
+  top: 50%;
+  right: 68px;
+  width: 320px;
+  transform: translateY(-50%);
+}
+.game-complexity {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 350px;
+  align-items: start;
+  gap: 36px;
+}
+.game-complexity p { margin-top: 0; }
+.complexity-formula { color: #147a73; font-size: 34px; font-weight: 700; }
+.game-complexity .callout { margin-top: 18px; }
+.slidev-layout .game-complexity th,
+.slidev-layout .game-complexity td { padding: 7px 12px; }
+.game-complexity th:last-child,
+.game-complexity td:last-child { text-align: right; }
+.game-complexity .shogi-row { background: #f2eee3; font-weight: 700; }
+.search-evaluation {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 380px);
+  align-items: start;
+  gap: 28px;
+}
+.search-evaluation ul { margin-top: 0; }
+.search-evaluation figure { margin: 0; }
+.search-evaluation figcaption { margin-top: 8px; font-size: 17px; color: #52686a; }
+.change-grid .card { padding: 14px 22px; }
+.change-grid .card p { margin: 0; }
+.slidev-layout table { font-size: 20px; }
+.slidev-layout th, .slidev-layout td { padding: 9px 12px; }
+.slidev-layout th { background: #e0f0eb; color: #152c31; }
+.slidev-layout.deterministic-workflow :is(th, td),
+.slidev-layout .cpu-gpu-comparison th,
+.slidev-layout .cpu-gpu-comparison td { padding: 6px 12px; }
+.cpu-gpu-comparison p { margin-top: 12px; font-size: 17px; color: #52686a; }
+.callout { margin-top: 27px; border-left: 4px solid #e4a04e; padding: 12px 18px; background: #f2eee3; font-size: 21px; }
+.slidev-layout h1 + .goal-workflow-intro { opacity: 1; }
+.slidev-layout .goal-workflow-intro > code {
+  background: #e0f0eb;
+  color: #152c31;
+  font-weight: 600;
+}
 .steps { display: flex; align-items: center; gap: 10px; margin-top: 48px; }
 .steps div { background: white; border: 1px solid #dce6df; border-radius: 9px; padding: 16px 12px; flex: 1; text-align: center; }
 .steps b, .steps span { display: block; }
-.steps b { color: #147a73; font-size: 14px; margin-bottom: 10px; }
-.steps span { font-size: 16px; font-weight: 700; }
+.steps b { color: #147a73; font-size: 17px; margin-bottom: 10px; }
+.steps span { font-size: 19px; font-weight: 700; }
 .steps i { color: #9bacaa; font-style: normal; }
-.detail { margin-top: 45px; color: #52686a; font-size: 19px; line-height: 1.8; }
+.slidev-layout .development-steps {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 16px;
+  margin: 42px 0 0;
+  padding: 0;
+  list-style: decimal inside;
+}
+.development-steps li {
+  margin: 0;
+  padding: 22px 18px;
+  background: white;
+  border: 1px solid #dce6df;
+  border-radius: 9px;
+  font-weight: 700;
+}
+.development-steps li::marker { color: #147a73; }
+.detail { margin-top: 38px; color: #52686a; font-size: 22px; line-height: 1.6; }
