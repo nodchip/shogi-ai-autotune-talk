@@ -82,7 +82,29 @@ layout: section
 </div>
 
 <!--
-左上の盤面が、エンジンに渡す局面の例です。左下の思考欄には読んだ手順が、右下には対局を通じた評価値の変化が出ています。推奨手と評価値はエンジンや持ち時間で変わります。次は初期局面に戻り、▲７六歩などの候補から指し手を選ぶ過程を見ていきます。
+左上の盤面が、エンジンに渡す局面の例です。左下の思考欄には読んだ手順が、右下には対局を通じた評価値の変化が出ています。推奨手と評価値はエンジンや持ち時間で変わります。次に、将棋のルールをゲームの性質として整理し、指し手の候補をたどるゲーム木を見ていきます。
+-->
+
+---
+
+<div class="eyebrow">2. 将棋 AI</div>
+
+# 二人零和有限確定完全情報ゲーム
+
+| 性質 | 将棋では |
+|---|---|
+| 二人 | 先手と後手の二人が交互に指す |
+| 零和 | 一方が勝てば、もう一方は負ける |
+| 有限 | 千日手などの終局ルールがあり、一局が有限の手数で終わる |
+| 確定 | 指し手とルールで次の局面が決まる |
+| 完全情報 | 盤上の駒、双方の持ち駒、これまでの指し手を互いに把握できる |
+
+<div class="callout" style="margin-top: 16px; padding-block: 8px;">必勝法 (先手必勝・後手必勝・引き分け) が存在する。</div>
+
+<!--
+零和は、勝ちを +1、負けを −1、引き分けを双方 0 とすれば、結果の合計が常に 0 という意味です。「有限」は一局を単位とした説明で、千日手で指し直す場合は別の一局として扱います。「確定」は、同じ局面で同じ指し手を選ぶと、次の局面が一意に決まるという意味です。完全情報でも、取り得る手が多いため、すべてを読むのは現実には困難です。
+
+参考資料 [日本将棋連盟の対局規則](https://www.shogi.or.jp/match/taikyoku_rules/)・[「ゲーム情報学：コンピューター将棋を超えて」](https://www.jstage.jst.go.jp/article/johokanri/59/2/59_89/_html)
 -->
 
 ---
@@ -148,7 +170,7 @@ layout: section
 
 - **探索**: 一定の手数まで先を読む。
   - 人間の「読み」に相当する。
-- **評価**: 読んだ先の局面の有利・不利を<br>見積もる。
+- **評価**: 読んだ先の局面の有利・不利を<br>評価する。
   - 人間の「大局観」に相当する。
 
 </div>
@@ -193,7 +215,7 @@ flowchart TD
 
 <div class="cpu-gpu-comparison">
 
-| 項目 | CPUエンジンの代表例 | GPUエンジンの代表例 |
+| 項目 | CPUエンジン | GPUエンジン |
 |---|---|---|
 | 探索アルゴリズム | アルファ・ベータ法 | PUCT |
 | 評価関数 | NNUE評価関数 | 深層学習モデル |
@@ -202,11 +224,166 @@ flowchart TD
 | 得意な局面の傾向 | 終盤 | 序盤 |
 | 主な将棋AI | やねうら王・水匠・tanuki- | dlshogi |
 
-<p>探索速度・評価精度・得意な局面は、モデルや対局条件によって変わる。</p>
 </div>
 
 <!--
 表は元講演で紹介した代表的な構成です。CPU中心の例は、軽い評価を繰り返して多くの局面を読みます。GPU中心の例は、深層学習モデルで有力な手と局面の価値を推定しながら探索します。NNUEも学習したニューラルネットワークです。ここでは対局中の構成を比べており、評価関数の学習に使う装置は別に考えます。このあとの実験の説明では、CPUで探索とNNUE評価を行う構成を取り上げます。
+-->
+
+---
+
+<div class="eyebrow">2. 将棋 AI</div>
+
+# ミニマックス法
+
+<div class="search-evaluation">
+<div>
+
+- 末端の局面を、<br>自分から見た点数で評価する。
+- 相手の手番では**最小**の点数を選ぶ。
+- 自分の手番では**最大**の点数を選ぶ。
+
+</div>
+
+<figure>
+
+```mermaid {scale: 0.72, themeCSS: '.flowchart-link { stroke: #60847c; } .marker { fill: #60847c; }'}
+%%{init: {"flowchart": {"rankSpacing": 42, "nodeSpacing": 12, "htmlLabels": false}}}%%
+flowchart TD
+  A["自分の手番<br/>最大値 3"] --> B1["手A<br/>最小値 3"]
+  A --> B2["手B<br/>最小値 1"]
+  B1 --> C1[7]
+  B1 --> C2[3]
+  B1 --> C3[5]
+  B2 --> C4[2]
+  B2 --> C5[4]
+  B2 --> C6[1]
+
+  classDef score fill:#f8f7f2,stroke:#60847c,color:#152c31,font-size:20px;
+  classDef selected fill:#e0f0eb,stroke:#60847c,color:#152c31,font-size:20px,font-weight:700;
+  class A,B1,C2 selected;
+  class B2,C1,C3,C4,C5,C6 score;
+```
+
+<figcaption>手 A の最小値は 3、手 B は 1。<br>自分は手 A を選ぶ。</figcaption>
+</figure>
+</div>
+
+<!--
+「探索と評価」と同じ数字を使います。手 A を指すと、相手の応手の候補は 7、3、5 なので、相手は 3 を選びます。手 B では 2、4、1 のうち 1 です。このように相手の手番では最小、自分の手番では最大を選び、末端の評価を手前へ戻します。
+-->
+
+---
+
+<div class="eyebrow">2. 将棋 AI</div>
+
+# アルファ・ベータ法
+
+<div class="search-evaluation">
+<div>
+
+- 手 A を先に読むと、評価値は **3** になる。
+- 手 B には、相手が評価値を **2** にできる<br>応手がある。
+- 手 B は **2 以下**。残りの応手は省ける。
+
+</div>
+
+<figure>
+
+```mermaid {scale: 0.72, themeCSS: '.flowchart-link { stroke: #60847c; } .marker { fill: #60847c; }'}
+%%{init: {"flowchart": {"rankSpacing": 42, "nodeSpacing": 12, "htmlLabels": false}}}%%
+flowchart TD
+  A["自分の手番<br/>最大値 3"] --> B1["手A<br/>最小値 3"]
+  A --> B2["手B<br/>最小値は2以下"]
+  B1 --> C1[7]
+  B1 --> C2[3]
+  B1 --> C3[5]
+  B2 --> C4[2]
+  B2 -.-> C5["省略"]
+  B2 -.-> C6["省略"]
+
+  classDef score fill:#f8f7f2,stroke:#60847c,color:#152c31,font-size:20px;
+  classDef selected fill:#e0f0eb,stroke:#60847c,color:#152c31,font-size:20px,font-weight:700;
+  class A,B1,C2 selected;
+  class B2,C1,C3,C4 score;
+  classDef skipped fill:#f8f7f2,stroke:#9bacaa,stroke-dasharray:4 3,color:#52686a,font-size:18px;
+  class C5,C6 skipped;
+```
+
+<figcaption>点線は、調べなかった手 B への応手。<br>その先の局面は評価しない。<br>同じ深さでミニマックス法と同じ結果を得る。</figcaption>
+</figure>
+</div>
+
+<!--
+アルファはここまでに分かった下限、ベータは上限です。この例では、手 A の点数 3 が自分の下限です。手 B の応手を一つ調べた時点で手 B の上限は 2 になり、手 A を超えられません。読む順序を工夫すると、このような打ち切りが早く起きます。
+
+参考資料 [Knuth・Moore「An analysis of alpha-beta pruning」](https://doi.org/10.1016/0004-3702(75)90019-3)
+-->
+
+---
+
+<div class="eyebrow">2. 将棋 AI</div>
+
+# 枝刈り手法
+
+限られた時間で有力な手を深く読むため、探索を省いたり浅くしたりする。
+
+| 手法 | 読みをどう減らすか |
+|---|---|
+| Futility Pruning | 最前手候補の評価値を上回りそうにないときに省く |
+| Late Move Pruning（LMP） | 有力でない手を省く |
+| Late Move Reductions（LMR） | 有力でない手を浅く読み、有望なら深く読み直す |
+
+<div class="callout">探索パラメーターを変えると、同じ持ち時間で読める深さや、<br>有力な手の見落としやすさが変わる。</div>
+
+<!--
+アルファ・ベータ法の打ち切りには、同じ深さのミニマックス値を保つ根拠があります。このページの手法は、有望さの見積もりを使って探索量をさらに減らします。LMR は枝を完全に省く手法ではなく、最初に読む深さを減らす手法です。たとえば LMP で何手目から候補を省くかを決めるしきい値は、探索パラメーターの一つです。条件を変えたときの棋力への影響は対局で測ります。
+
+Futility Pruning の例です。先に読んだ手 A の評価値が 100 だとします。手 B は評価関数による見積もりに、残りの深さで評価が上がる余地を見込んだ余裕分を足しても 70 なら、B の先の探索を省きます。この例では A の評価値が基準値 α です。α を上の階層から引き継ぐ場合もあります。70 は見積もりなので、実際に先を読めば 100 を超える手を見落とす可能性もあります。
+
+Late Move Pruning では、エンジンが有力と見込む順に候補手を並べます。残りの探索が浅く、調べた手の数がしきい値に達したら、候補順の後ろに残った手のうち、条件に当てはまるものを省きます。たとえば Stockfish には、手の数がしきい値に達したところで quiet moves（駒取りなどを伴わない手）を省く処理があります。
+
+参考資料 [Stockfish の探索用語集](https://official-stockfish.github.io/docs/stockfish-wiki/Terminology.html)・[探索の実装](https://github.com/official-stockfish/Stockfish/blob/master/src/search.cpp)
+-->
+
+---
+
+<div class="eyebrow">2. 将棋 AI</div>
+
+# NNUE 評価関数
+
+<div class="steps">
+  <div><span>局面の特徴量</span></div><i>→</i>
+  <div><span>ニューラルネットワーク</span></div><i>→</i>
+  <div><span>局面の評価値</span></div>
+</div>
+
+<div class="callout">一手で変わる特徴が少ないときは、前の局面の計算結果を差分更新する。<br>これにより、探索中に CPU で多くの局面を評価できる。</div>
+
+<!--
+NNUE は Efficiently Updatable Neural Network の略です。将棋で使われる特徴量の例は HalfKP で、玉の位置と玉以外の駒の種類・位置などの組を使います。一手で変わる特徴が少ない場合、入力に近い層の計算を、特徴の追加と削除に対応する加減算で更新できます。玉の移動など、大きく変わるときは再計算が必要になる場合があります。
+
+参考資料 [Stockfish の NNUE 技術文書](https://official-stockfish.github.io/docs/nnue-pytorch-wiki/docs/nnue.html)
+-->
+
+---
+
+<div class="eyebrow">2. 将棋 AI</div>
+
+# 学習
+
+<div class="steps">
+  <div><span>局面と教師信号を<br>用意する</span></div><i>→</i>
+  <div><span>NNUE の予測と<br>教師信号を比べる</span></div><i>→</i>
+  <div><span>誤差が小さくなるよう<br>重みを更新する</span></div>
+</div>
+
+<div class="callout">教師信号には、探索で得た評価値や対局の勝敗を使う。<br>学習データ、特徴量、学習率などに選択肢がある。</div>
+
+<!--
+教師信号には、たとえば既存エンジンが探索で得た評価値や、対局の勝敗を使います。学習率は、予測の誤差に応じて重みをどの程度更新するかを左右する設定です。既存の評価関数から追加学習することもできます。後の結果では、学習率と特徴量を変えて対局で評価した例を紹介します。
+
+参考資料 [Stockfish の NNUE 技術文書](https://official-stockfish.github.io/docs/nnue-pytorch-wiki/docs/nnue.html)
 -->
 
 ---
@@ -259,7 +436,7 @@ layout: section
 
 <div class="eyebrow">3. 将棋 AI の改良にかかる手間</div>
 
-# 将棋 AI の開発の流れ
+# 将棋 AI の改良の流れ
 
 <ol class="development-steps">
   <li>仮説</li>
@@ -279,7 +456,7 @@ layout: section
 
 <div class="eyebrow">3. 将棋 AI の改良にかかる手間</div>
 
-# 将棋 AI の開発で人が担う作業
+# 将棋 AI の改良で人が担う作業
 
 - 将棋 AI のどこを、どう変えるか考える
 - 変更の効果を試せるように実装する
@@ -303,7 +480,7 @@ layout: section
 
 <div class="eyebrow">4. 解決方法</div>
 
-# Coding Agent による開発の自動化
+# Coding Agent による改良の自動化
 
 仮説を立てるところから、実験結果を記録するところまで自動化する。
 
@@ -325,11 +502,11 @@ layout: section
 
 <div class="eyebrow">4. 解決方法</div>
 
-# 開発を自動化する仕組みの開発
+# 改良を自動化する仕組みの開発
 
 <div class="callout">仕組みの設計・実装にも Coding Agent を使った。</div>
 
-<p class="detail">複数の構成を試し、各工程をどのように進めるかを検討した。</p>
+<p class="detail">複数の構成を比較した。</p>
 
 <!--
 Coding Agent には、実験の各工程を進める役割に加え、そのための仕組みを設計・実装するときにも協力してもらいました。次のページでは、仕組みの検討に使ったスキル集を紹介します。
@@ -339,7 +516,7 @@ Coding Agent には、実験の各工程を進める役割に加え、そのた�
 
 <div class="eyebrow">4. 解決方法</div>
 
-# Shaping Skills を使った設計
+# Shaping Skills
 
 Shape Up の考え方を、AI と一緒に設計を進めるための手順にしたスキル集。
 
@@ -360,11 +537,11 @@ Shape Up の考え方を、AI と一緒に設計を進めるための手順に�
 
 <div class="eyebrow">4. 解決方法</div>
 
-# どんな構成を試したか
+# 構成案
 
 | 構成 | 計画・判断 | 実行・待機 |
 |---|---|---|
-| Goalから直接実行 | Coding Agent | 既存ツールを起動して待機 |
+| Goalによる直接実行 | Coding Agent | 既存ツールを起動して待機 |
 | 専用プログラムと<br>Coding Agent | Coding Agent が<br>計画を提案 | 専用プログラムが工程を管理 |
 | 専用プログラムと Web UI | Coding Agent と<br>専用プログラム | コントローラーが実行し、<br>ブラウザで操作・進捗確認 |
 | Jenkinsと分担 | Coding Agent | 長い処理をJenkinsへ渡す |
@@ -377,7 +554,7 @@ Shape Up の考え方を、AI と一緒に設計を進めるための手順に�
 
 <div class="eyebrow">4. 解決方法</div>
 
-# Goalから直接実行
+# Goalによる直接実行
 
 <p class="goal-workflow-intro">Coding Agent が <code>/goal</code> の指示に沿って、計画から採否の判断・記録まで進める。</p>
 
@@ -411,7 +588,7 @@ class: deterministic-workflow
 |---|---|
 | 1. 準備 | Coding Agent を起動し、実験の計画と実装を任せる |
 | 2. 実験 | 実験計画と実装を検証し、実験を実行する |
-| 3. 採否 | 実験結果を基準に照らして判定する |
+| 3. 採否 | 実験結果を基準に照らし合わせて判定する |
 | 4. 記録 | 実験結果と採否を記録する |
 
 <div class="callout" style="margin-top: 16px; padding-block: 8px;">
