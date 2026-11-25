@@ -370,6 +370,40 @@ NNUE は Efficiently Updatable Neural Network の略です。将棋で使われ�
 
 <div class="eyebrow">2. 将棋 AI</div>
 
+# HalfKP 特徴量
+
+<div class="search-evaluation" style="grid-template-columns: minmax(0, 1fr) 215px;">
+<div>
+
+玉の位置と、玉以外の駒の種類・位置を組にし、<br>その組を一つの特徴とする。
+
+各特徴に一つの次元を割り当て、<br>局面を **0 と 1 からなるベクトル**で表す。
+
+- 局面に現れる特徴の次元は **1**
+- 局面に現れない特徴の次元は **0**
+
+片側の視点あたり **125,388 次元**（81 × 1,548）。
+
+**ほかの特徴量**　K＋P、HalfKA、HalfKA_hm、Threat 系など
+
+</div>
+
+<figure>
+  <img src="./assets/halfkp.png" width="195" alt="５九の玉と２七の歩を配置した将棋盤" />
+  <figcaption>HalfKP の特徴の例<br>５九の玉 × ２七の歩</figcaption>
+</figure>
+</div>
+
+<!--
+図は玉と玉以外の駒を組み合わせる例を一つだけ示しています。この組み合わせに対応する次元は 1 です。実際の局面では、現れている複数の組み合わせに対応する次元が 1 になり、ほかの次元は 0 になります。実際は、先手・後手それぞれの視点で自分の玉を基準に、双方の駒を表します。持ち駒も別の特徴として符号化します。標準的な将棋版 HalfKP では、玉の位置 81 マスそれぞれに、盤上の駒と持ち駒を表す 1,548 個分の添字を割り当てます。先手と後手の各視点で、81 × 1,548 = 125,388 次元です。基準となる玉が動かなければ、変化した駒に対応する部分を差分更新できます。
+
+参考資料 [奈須悠「NNUE 評価関数」](https://raw.githubusercontent.com/ynasu87/nnue/master/docs/nnue.pdf)・[どうたぬきの WCSC31 アピール文書](https://www.apply.computer-shogi.org/wcsc31/appeal/tenuki/tenuki31.pdf)・[やねうら王の K＋P](https://github.com/yaneurao/YaneuraOu/blob/master/source/eval/nnue/architectures/kp_256x2-32-32.h)・[tatara の入力特徴量](https://github.com/SH11235/tatara#input-feature-set)・[BulletOu の実装概要](https://github.com/yaneurao/BulletOu/blob/shogi-support/README-ja.md)
+-->
+
+---
+
+<div class="eyebrow">2. 将棋 AI</div>
+
 # 学習
 
 <div class="steps">
