@@ -1,5 +1,5 @@
 ---
-title: 将棋AIの開発をAIに任せる
+title: 将棋 AI を開発する AI を AI に開発させる話
 theme: default
 fonts:
   sans: Noto Sans JP
@@ -199,7 +199,7 @@ flowchart TD
   class B2,C1,C3,C4,C5 score;
 ```
 
-<figcaption>□は局面、中の数字は評価値。<br>実線は指し手、点線は応手を考慮した評価を<br>手前の局面へ戻す流れ。</figcaption>
+<figcaption>□は局面、中の数字は評価値。<br>実線は指し手、点線は評価値を手前の局面に<br>フィードバックする流れ。</figcaption>
 </figure>
 </div>
 
@@ -211,7 +211,7 @@ flowchart TD
 
 <div class="eyebrow">2. 将棋 AI</div>
 
-# CPUエンジンとGPUエンジン
+# 将棋 AI のアーキテクチャー
 
 <div class="cpu-gpu-comparison">
 
@@ -358,7 +358,7 @@ Late Move Pruning では、エンジンが有力と見込む順に候補手を�
   <div><span>局面の評価値</span></div>
 </div>
 
-<div class="callout">一手で変わる特徴が少ないときは、前の局面の計算結果を差分更新する。<br>これにより、探索中に CPU で多くの局面を評価できる。</div>
+<div class="callout">前の局面との差分のみ計算することで、高速に評価することができる。</div>
 
 <!--
 NNUE は Efficiently Updatable Neural Network の略です。将棋で使われる特徴量の例は HalfKP で、玉の位置と玉以外の駒の種類・位置などの組を使います。一手で変わる特徴が少ない場合、入力に近い層の計算を、特徴の追加と削除に対応する加減算で更新できます。玉の移動など、大きく変わるときは再計算が必要になる場合があります。
@@ -377,12 +377,12 @@ NNUE は Efficiently Updatable Neural Network の略です。将棋で使われ�
 
 玉の位置と、玉以外の駒の種類・位置を組にし、<br>その組を一つの特徴とする。
 
+片側の視点あたり **125,388 次元**（81 × 1,548）。
+
 各特徴に一つの次元を割り当て、<br>局面を **0 と 1 からなるベクトル**で表す。
 
 - 局面に現れる特徴の次元は **1**
 - 局面に現れない特徴の次元は **0**
-
-片側の視点あたり **125,388 次元**（81 × 1,548）。
 
 **ほかの特徴量**　K＋P、HalfKA、HalfKA_hm、Threat 系など
 
@@ -407,12 +407,15 @@ NNUE は Efficiently Updatable Neural Network の略です。将棋で使われ�
 # 学習
 
 <div class="steps">
-  <div><span>局面と教師信号を<br>用意する</span></div><i>→</i>
-  <div><span>NNUE の予測と<br>教師信号を比べる</span></div><i>→</i>
+  <div><span>学習データ<br>用意する</span></div><i>→</i>
+  <div><span>NNUE の評価値と<br>学習データの<br>評価値を比べる</span></div><i>→</i>
   <div><span>誤差が小さくなるよう<br>重みを更新する</span></div>
 </div>
 
-<div class="callout">教師信号には、探索で得た評価値や対局の勝敗を使う。<br>学習データ、特徴量、学習率などに選択肢がある。</div>
+- 学習データには、局面と評価値、勝敗などが含まれる。
+- 学習データの評価値には、自己対局の探索の評価値や、<br> GPU エンジンの評価関数の Value を使う。
+
+<div class="callout">学習データ、特徴量、学習率などに選択肢がある。</div>
 
 <!--
 教師信号には、たとえば既存エンジンが探索で得た評価値や、対局の勝敗を使います。学習率は、予測の誤差に応じて重みをどの程度更新するかを左右する設定です。既存の評価関数から追加学習することもできます。後の結果では、学習率と特徴量を変えて対局で評価した例を紹介します。
@@ -430,7 +433,7 @@ NNUE は Efficiently Updatable Neural Network の略です。将棋で使われ�
   <div class="card"><h2>探索</h2><p>手を読む順序・枝刈り</p></div>
   <div class="card"><h2>評価関数</h2><p>特徴量・ネットワーク構造</p></div>
   <div class="card"><h2>学習</h2><p>学習データ・学習条件</p></div>
-  <div class="card"><h2>実行時の工夫</h2><p>時間配分・高速化</p></div>
+  <div class="card"><h2>対局時</h2><p>時間配分・高速化</p></div>
 </div>
 
 <!--
@@ -444,7 +447,7 @@ NNUE は Efficiently Updatable Neural Network の略です。将棋で使われ�
 # 自己対局による棋力向上の判断
 
 <div class="callout mb-5">
-  変更前と変更後のバージョンを自己対局させる。<br>
+  変更前と変更後のバージョンを対局させる。<br>
   対局結果から、レーティングが統計的に有意に向上したかを判定する。
 </div>
 
@@ -640,7 +643,7 @@ class: deterministic-workflow
 
 # 専用プログラムと Web UI
 
-コントローラーが実験を進め、人がブラウザで操作する構成を検討した。
+専用プログラムが実験を進め、人がブラウザで操作する構成を検討した。
 
 <div class="change-grid">
   <div class="card"><h2>ブラウザで操作</h2><p>実験の開始・変更・停止・再開</p></div>
@@ -695,7 +698,7 @@ layout: section
 | 変更 | 長時間対局数 | 結果 |
 |---|---:|---|
 | [初期学習率を10分の1にして追加学習](https://nodchip.hatenablog.com/entry/goal-20260909-171439-3292c923) | 12,520 | 採用 |
-| [学習時に共通の駒特徴を追加して継続学習](https://nodchip.hatenablog.com/entry/goal-20260911-135550-9efd36a9) | 11,832 | 採用 |
+| [学習時に共通の駒特徴量を追加して追加学習](https://nodchip.hatenablog.com/entry/goal-20260911-135550-9efd36a9) | 11,832 | 採用 |
 
 <!--
 それぞれ、実験開始時点で採用されていた追加学習前のモデルと比較しました。共通の駒特徴は、玉の位置が異なる局面の間でも、同じ駒の情報を共有して学ぶための補助です。長時間対局は40秒、1手ごとに0.4秒加算。逐次検定に使った+4 Eloは仮説の値です。
@@ -709,10 +712,10 @@ layout: section
 
 | 担当 | 役割 |
 |---|---|
-| Coding Agent | 仮説と実験計画を組み立て、結果を検査して採否を判断 |
-| 既存ツール・小さなRust補助 | 学習、対局、実行の記録や確認 |
-| Jenkins | 実験計画に沿って実験プログラムを実行 |
-| 人 | Goalを再開、停止理由、必要な承認 |
+| Coding Agent | 仮説と実験計画の組み立て、結果の検査、採否の判断 |
+| 既存・自作ツール | 学習、対局、実行の記録や確認 |
+| Jenkins | 実験プログラムの実行 |
+| 人 | Goalを再開 |
 
 <!--
 短い確認には既存ツールを使い、長時間・反復処理にはJenkinsを使う運用です。再開が必要なときは、ジョブの終了とGoalの状態を人が照合します。
